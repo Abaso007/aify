@@ -31,7 +31,7 @@ class LocalTokenManager(TokenManager):
             return
 
         with open(tokens_file) as f:
-            for line in f.readlines():
+            for line in f:
                 segs = line.split('|')
                 token = segs[0].strip()
                 if len(token) > 0:
@@ -107,8 +107,7 @@ class BasicAuthBackend(AuthenticationBackend):
             token = request.cookies.get('token')
 
         if token:
-            token_stored = self._token_manager.get_token(token)
-            if token_stored:
+            if token_stored := self._token_manager.get_token(token):
                 username = token_stored['username']
                 permissions = token_stored['permissions']
                 user = AuthenticatedUser(

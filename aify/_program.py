@@ -82,7 +82,7 @@ class Program:
         for var in variables:
             name = var.get('name')
             if not name or not isinstance(name, str):
-                raise ValueError(f'invalid variable')
+                raise ValueError('invalid variable')
             typ = var.get('type')
             if not typ or typ == 'output':
                 self._output_variables.append(var)
@@ -108,7 +108,7 @@ class Program:
 
     def run(self, **kwargs):
         """Run this program."""
-        kwargs.update(self._modules)
+        kwargs |= self._modules
         r = self._runner(**kwargs)
         r.update_display.throttle_limit = 0
         return r
@@ -132,9 +132,7 @@ class Program:
 
 def _load_template(url: str):
     template = None
-    if url.startswith("http://") or url.startswith("https://"):
-        pass
-    else:
+    if not url.startswith("http://") and not url.startswith("https://"):
         with open(url) as f:
             template = f.read()
 

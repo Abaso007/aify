@@ -50,25 +50,24 @@ def read(program_name: str, session_id: str, n=10, max_len=4096) -> List[Dict]:
         kind='session_memories', ancestor=datastore_client.key('memories', f'{program_name}_{session_id}'))
     query.order = ["-created"]
 
-    memories = [x for x in query.fetch(limit=n)]
+    memories = list(query.fetch(limit=n))
 
     return memories[::-1]
 
 
 def sessions(program_name: str) -> List[Dict]:
-    res = []
-
     key = datastore_client.key('sessions', program_name)
     query = datastore_client.query(kind='session_id', ancestor=key)
     # query.order = ["-created"]
 
     sessions = query.fetch()
 
-    for s in sessions:
-        res.append({
+    return [
+        {
             'name': s['program_name'],
             'session_id': s['session_id'],
             'last_modified': s['created'],
-            'latest': [dict(s)]
-        })
-    return res
+            'latest': [dict(s)],
+        }
+        for s in sessions
+    ]
