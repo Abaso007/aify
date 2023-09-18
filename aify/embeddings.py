@@ -89,9 +89,7 @@ def _load_pickle_file(name: str):
     elif not os.path.exists(pickle_file):
         return
 
-    df = pd.read_pickle(pickle_file)
-
-    return df
+    return pd.read_pickle(pickle_file)
 
 def _load_collections(name: str):
     global _embeds

@@ -19,8 +19,9 @@ def read(*parts):
     
 def find_version(*file_paths):
     version_file = read(*file_paths)
-    version_match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]", version_file, re.M)
-    if version_match:
+    if version_match := re.search(
+        r"^__version__ = ['\"]([^'\"]*)['\"]", version_file, re.M
+    ):
         return version_match.group(1)
     raise RuntimeError("Unable to find version string.")
 
@@ -28,10 +29,9 @@ version = find_version('aify', '__init__.py')
 
 install_requires = []
 with open(os.path.join(here, 'requirements.txt')) as f:
-    for r in [x.strip() for x in f.readlines()]:
-        if r != '':
-            install_requires.append(r)
-
+    install_requires.extend(
+        r for r in [x.strip() for x in f.readlines()] if r != ''
+    )
 setup(
     name='aify',
     version=version,

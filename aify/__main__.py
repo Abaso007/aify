@@ -21,15 +21,13 @@ def runserver(args):
     """
     Initialize and start the uvicorn service process.
     """
-    apps_dir = args.apps_dir
-    if apps_dir:
+    if apps_dir := args.apps_dir:
         apps_dir = os.path.abspath(apps_dir)
         os.environ['AIFY_APPS_DIR'] = apps_dir
 
         if args.reload:
             if not args.reload_dirs:
-                args.reload_dirs = []
-                args.reload_dirs.append(AIFY_LIB_DIR)
+                args.reload_dirs = [AIFY_LIB_DIR]
             args.reload_dirs.append(apps_dir)
 
     uvicorn.run('aify:entry',

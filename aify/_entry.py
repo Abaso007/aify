@@ -67,7 +67,7 @@ async def execute_program(request: Request, name: str, session_id: str):
         kwargs = await request.json()
     except Exception as e:
         raise HTTPException(status_code=400, detail="Bad request body.")
-    
+
     _validate_sessions_id(sessions_id=session_id, request=request)
 
     # update user info
@@ -80,7 +80,11 @@ async def execute_program(request: Request, name: str, session_id: str):
     kwargs['session_id'] = session_id
 
     filter_variable = request.query_params.get('variable')
-    if filter_variable and not (filter_variable in program.input_variable_names or filter_variable in program.output_variable_names):
+    if (
+        filter_variable
+        and filter_variable not in program.input_variable_names
+        and filter_variable not in program.output_variable_names
+    ):
         raise HTTPException(status_code=400, detail="invalid variable.")
 
     # Check if the Server-Sent Event enabled.
@@ -146,10 +150,8 @@ async def get_memories(request: Request, name: str, session_id: str, limit: int=
 
     memories = []
     program = get_program(name)
-    memory = program.modules.get('memory')
-    if memory:
-        m = memory.read(name, session_id, max_len=2040*1024, n=limit)
-        if m:
+    if memory := program.modules.get('memory'):
+        if m := memory.read(name, session_id, max_len=2040 * 1024, n=limit):
             memories = m
     return JSONResponse(memories)
 
@@ -157,18 +159,17 @@ async def get_memories(request: Request, name: str, session_id: str, limit: int=
 @requires(['authenticated'])
 async def list_apps(request: Request):
     """List applications"""
-    progs = []
-
-    for name, prog in _program.programs().items():
-        progs.append({
+    progs = [
+        {
             'name': name,
             'title': prog.template.get('title'),
             'description': prog.template.get('description'),
             'icon_emoji': prog.template.get('icon_emoji'),
             'is_public': prog.template.get('is_public'),
-            'variables': prog.template.get('variables')
-        })
-    
+            'variables': prog.template.get('variables'),
+        }
+        for name, prog in _program.programs().items()
+    ]
     return JSONResponse(progs)
 
 @api.get('/sessions')
@@ -191,10 +192,9 @@ async def list_sessions(request: Request):
 async def auth(request: Request):
     response = await render('auth.html')(request=request)
     if request.method == 'POST':
-        next = request.query_params.get('next')
-        if next:
+        if next := request.query_params.get('next'):
             response = RedirectResponse(next, status_code=302)
-        
+
         async with request.form() as form:
             token = form.get('token')
             response.set_cookie('token', token, max_age=7*24*3600)
